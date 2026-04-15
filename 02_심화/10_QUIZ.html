@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>영화정보</h1>
+    <button id="add">추가</button>
+    <ul id="list"></ul>
+
+    <script>
+        const url = 'http://raw.githubusercontent.com/wapj/jsbackend/main/movieinfo.json';
+
+        // 데이터 가져오기
+        async function fetchMovieData(url) {
+            const response = await fetch(url);
+            if(!response.ok){
+                throw new Error('요청에 실패. 상태코드: '+ response.status);
+            }
+            const data = await response.json();
+            return data;
+        }
+
+        // 데이터 검증
+        function validateMovieData(data){
+            if(!data.articleList || data.articleList.length == 0){
+                throw new Error('데이터가 없습니다');
+            }
+        }
+
+        // 영화 정보 추출
+        function extractMovieInfos(articleList){
+            return articleList.map((article, idx) => ({
+                title: article.title,
+                rank: idx + 1,
+            }));
+        }
+
+        // 영화 출력
+        function displayMovies(movieinfos){
+            const list = document.querySelector('#list');
+            list.replaceChildren();
+            for(const movie of movieinfos){
+                const li = document.createElement('li');
+                li.textContent = `[${movie.rank}위] ${movie.title}`;
+                list.appendChild(li);
+            }
+        }
+
+        async function movies() {
+            try {
+                const data = await fetchMovieData(url);
+                validateMovieData(data);
+                const movieInfos = extractMovieInfos(data.articleList);
+                displayMovies(movieInfos);
+            } catch (err) {
+                console.error('에러 발생:', err.message);
+            }
+        }
+
+        document.getElementById('add').addEventListener('click', function(){
+            movies();
+        })
+    </script>
+</body>
+</html>
